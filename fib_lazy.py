@@ -25,6 +25,7 @@ class FibHeap:
         # you may define any additional member variables you need
         self.roots = []
         self.min = None
+        self.deleted = False
 
     def get_roots(self) -> list:
         return self.roots
@@ -39,17 +40,25 @@ class FibHeap:
     def delete_min(self) -> None:
         if not self.min:
             return
-        for child in self.min.children:
-            child.parent = None
-            self.roots.append(child)
-        self.roots.remove(self.min)
+        self.deleted = True
+        if self.min in self.roots:
+            self.roots.remove(self.min)
         if not self.roots:
             self.min = None
         else:
             self.merge()
 
     def find_min(self) -> FibNode:
-        return self.min
+        if not self.roots:
+            if self.min and self.deleted:
+                for child in self.min.children:
+                    child.parent = None
+                    self.roots.append(child)
+                self.merge()
+                self.min = self.find_min()
+                self.deleted = False 
+        else:
+            return self.min
 
     def decrease_priority(self, node: FibNode, new_val: int) -> None:
         node.val = new_val
@@ -59,7 +68,7 @@ class FibHeap:
         
         if node.val < self.min.val:
             self.min = node
-    
+
     def cut(self, node: FibNode):
         parent = node.parent
         if parent:
